@@ -8,10 +8,13 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float attackDelay;
     [SerializeField] private Transform firePoint;
     [SerializeField] private Projectile[] fireBalls;
+    [SerializeField] private AudioClip _launchFireballSound;
+    private AudioSource _audioSource;
     
     private float attackTimer = Mathf.Infinity;
     private Animator anim;
     private PlayerMovement _playerMovement;
+ 
     
     
     // Start is called before the first frame update
@@ -19,7 +22,9 @@ public class PlayerAttack : MonoBehaviour
     {
         anim = GetComponent<Animator>();
         _playerMovement = GetComponent<PlayerMovement>();
-        
+        _audioSource = GetComponent<AudioSource>();
+       
+
     }
 
     // Update is called once per frame
@@ -28,8 +33,10 @@ public class PlayerAttack : MonoBehaviour
         attackTimer += Time.deltaTime;
         if (Input.GetMouseButton(0) && attackTimer > attackDelay && _playerMovement.canAttack())
         {
+          //  _audioSource.PlayOneShot(_launchFireballSound);
             Attack();
         }
+        
     }
 
     private void Attack()

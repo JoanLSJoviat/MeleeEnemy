@@ -19,7 +19,7 @@ public class Projectile : MonoBehaviour
     {
         anim = GetComponent<Animator>();
         collider = GetComponent<BoxCollider2D>();
-        
+
     }
 
     // Update is called once per frame

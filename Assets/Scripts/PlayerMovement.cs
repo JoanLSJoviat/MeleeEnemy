@@ -2,60 +2,83 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Movement")]
     [SerializeField] private float speed;
     [SerializeField] private float jumpPower;
+    
+    [Header("Layer Masks")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask wallLayer;
+    
+    [Header("Audio")]
+    [SerializeField] private AudioClip _jumpSound;
+    [SerializeField] private AudioClip _deathSound;
+    AudioSource _audioSource;
+    
     private Rigidbody2D body;
     private Animator anim;
     private BoxCollider2D boxCollider;
     private float wallJumpCooldown;
     private float horizontalInput;
-
+    private PlayerHealth _ph;
     private void Awake()
     {
         //Grab references for rigidbody and animator from object
         body = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider2D>();
+        _audioSource = gameObject.GetComponent<AudioSource>();
+        _ph = GetComponent<PlayerHealth>();
     }
 
     private void Update()
     {
-        horizontalInput = Input.GetAxis("Horizontal");
-
-        //Flip player when moving left-right
-        if (horizontalInput > 0.01f)
-            transform.localScale = Vector3.one;
-        else if (horizontalInput < -0.01f)
-            transform.localScale = new Vector3(-1, 1, 1);
-
-        //Set animator parameters
-        anim.SetBool("run", horizontalInput != 0);
-        anim.SetBool("grounded", isGrounded());
-
-        //Wall jump logic
-        if (wallJumpCooldown > 0.2f)
+        if (_ph.currentHealth == 0)
         {
-            body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
+            Debug.Log("DIE");
+            //_audioSource.PlayOneShot(_deathSound);
+        }
+        
+        else
+        {
+            horizontalInput = Input.GetAxis("Horizontal");
 
-            if (onWall() && !isGrounded())
+            //Flip player when moving left-right
+            if (horizontalInput > 0.01f)
+                transform.localScale = Vector3.one;
+            else if (horizontalInput < -0.01f)
+                transform.localScale = new Vector3(-1, 1, 1);
+
+            //Set animator parameters
+            anim.SetBool("run", horizontalInput != 0);
+            anim.SetBool("grounded", isGrounded());
+
+            //Wall jump logic
+            if (wallJumpCooldown > 0.2f)
             {
-                body.gravityScale = 0;
-                body.velocity = Vector2.zero;
+                body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
+
+                if (onWall() && !isGrounded())
+                {
+                    body.gravityScale = 0;
+                    body.velocity = Vector2.zero;
+                }
+                else
+                    body.gravityScale = 7;
+
+                if (Input.GetKey(KeyCode.Space))
+                    Jump();
             }
             else
-                body.gravityScale = 7;
-
-            if (Input.GetKey(KeyCode.Space))
-                Jump();
+                wallJumpCooldown += Time.deltaTime;
         }
-        else
-            wallJumpCooldown += Time.deltaTime;
+       
     }
 
     private void Jump()
     {
+       // _audioSource.PlayOneShot(_jumpSound);
+        
         if (isGrounded())
         {
             body.velocity = new Vector2(body.velocity.x, jumpPower);
